@@ -1,0 +1,12 @@
+{% 
+    local page_count = tonumber(page_count)
+%}
+<div class="row col-md-12" >
+    <nav  class="text-center">
+      <ul class="pagination">
+        {% for i=1, page_count do %}
+        <li {% if i==page then %} class="active"{% end %} id="pager_ajax" data-url="{{url}}"><a href="#">{{i}}</a></li>
+        {% end %}
+      </ul>
+    </nav>
+</div>

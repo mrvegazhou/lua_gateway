@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Gateway - 负载代理信息</title>
+    {(meta.html)}
+</head>
+<body>
+
+{(header.html)}<!-- header end -->
+
+<div id="main" class="main-container container">
+    <div class="row" style="margin-bottom:20px">
+        <div class="col-md-12">
+            <div class="pull-left">
+                <h4>负载均衡反向代理信息列表</h4>
+            </div>
+
+            <div class="pull-right">
+                <input id="rule-search" type="text" class="form-control" placeholder="seach rules" style="width:150px;display: none;margin-right:10px;">
+                <a id="view-btn" style="display:none;" data-type="table" class="btn btn-warning" rel="nofollow" href="javascript:void(0);">
+                    <i class="fa fa-database"></i>
+                    <span>数据视图</span>
+                </a>
+                <a id="switch-btn" style="display:none;" data-on="yes" class="btn btn-danger" rel="nofollow" href="javascript:void(0);">
+                    <i class="fa fa-pause"></i>
+                    <span>停用路由负载</span>
+                </a>
+                <a class="btn btn-primary" href="javascript:void(0);" id="add-btn">
+                    <i class="fa fa-filter"></i>
+                    <span>添加新负载信息</span>
+                </a>
+                <a href="javascript:void(0);" id="sync-btn" class="btn btn-info">
+                    <i class="glyphicon glyphicon-repeat"></i>
+                    <span>同步服务器列表</span>
+                </a>
+                <a href="javascript:void(0);" id="clear-btn" class="btn btn-info">
+                    <i class="glyphicon glyphicon-trash"></i>
+                    <span>清除无效待更新host</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row" id="table-view">
+        <div class="col-md-12">
+            <table  id="operable-table" class="table table-bordered  table-hover">
+                <thead>
+                <tr>
+                    <th width="60px">序号</th>
+                    <th width="40px">启用</th>
+                    <th width="150px">负载名称</th>
+                    <th>负载规则</th>
+                    <th>处理</th>
+                    <th>创建/变更时间</th>
+                    <th width="173px">操作</th>
+                </tr>
+                </thead>
+
+                <tbody id="rules" class="list">
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    {(data-view-part.html)}
+    {(pager_ajax.html)}
+</div>
+
+<script id="rule-item-tpl" type="text/template">
+    {@each upstreams as up, index}
+    <tr id="${up.id}" >
+        <td class="center">${parseInt(index)+1}</td>
+        <td class="center">
+            {@if up.enable==true }
+            <input type="checkbox" disabled checked="checked"/>
+            {@/if}
+
+            {@if up.enable!=true }
+            <input type="checkbox" disabled/>
+            {@/if}
+        </td>
+        <td class="center"><p class="namep">${up.key}</p></td>
+        <td class="left">
+            host: {@if up.host}${up.host}{@else}空{@/if}<br/>
+            负载类型: RR轮询{@if up.balancer_type.rr==true}✔{@else}✘{@/if}&nbsp;|&nbsp;最快优先{@if up.balancer_type.quick==true}✔{@else}✘{@/if}
+            <br/>
+        </td>
+        <td class="center">
+            {@if up.log==true }
+                当code=${up.code},记录log
+            {@else}
+                不记录log
+            {@/if}
+        </td>
+        <td class="center">${up.op_time}</td>
+        <td class="center do">
+            <div class="btn-group" role="group" aria-label="...">
+                <a href="/api/balancer/urls?bid=${up.id}" target="_blank" class="btn btn-default auth-show-btn" data-id="${up.id}" data-name="${up.key}"><i title="负载url列表" class="fa fa-eye"></i></a>
+                <button type="button" class="btn btn-default edit-btn" data-id="${up.id}" data-name="${up.key}"><i title="编辑" class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-default delete-btn" data-id="${up.id}" data-name="${up.key}"><i title="删除" class="fa fa-trash"></i></button>
+            </div>
+        </td>
+    </tr>
+    {@/each}
+</script>
+
+<script id="edit-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="edit-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="rule-key" value="{@if r.key}${r.key}{@/if}" placeholder="名称">
+                </div>
+            </div><!-- name -->
+            <div class="form-group">
+                <label for="input-rules" class="col-sm-2 control-label">HOST</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control"  id="rule-host" placeholder="host name" value="${r.host}"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-rules" class="col-sm-2 control-label">负载类型</label>
+                <div class="col-sm-10">
+                    <div class="checkbox">
+                      <input type="checkbox" {@if r.balancer_type.rr==true}checked="checked"{@/if} value="true" id="rule-balancer_type_rr" checked="checked">RR轮询
+                    </div>
+                    <div class="checkbox">
+                      <input type="checkbox" {@if r.balancer_type.quick==true}checked="checked"{@/if} value="true" id="rule-balancer_type_quick">快速优先
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group handle-holder">
+                <label class="col-sm-2 control-label">处理</label>
+                <div class="col-sm-4 handle-code-hodler">
+                    <input type="text" class="form-control" id="rule-code" placeholder="balancer fail status code" value="${r.code}">
+                </div>
+                <div class="col-sm-2">
+                    <select class="form-control" id="rule-log">
+                        <option value="true" {@if r.log==true} selected {@/if}>Log</option>
+                        <option value="false" {@if r.log==false} selected {@/if}>Not Log</option>
+                    </select>
+                </div>
+            </div><!-- code -->
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-12">
+                    <div class="checkbox">
+                        <label>
+                            <input {@if r.enable==true} checked {@/if} type="checkbox" id="rule-enable"> 启用
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</script>
+
+<script id="add-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="edit-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="rule-key" value="" placeholder="名称">
+                </div>
+            </div><!-- name -->
+            <div class="form-group">
+                <label for="input-rules" class="col-sm-2 control-label">HOST</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control"  id="rule-host" placeholder="host name" value=""/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-rules" class="col-sm-2 control-label">负载类型</label>
+                <div class="col-sm-10">
+                    <div class="checkbox">
+                      <input type="checkbox" value="true" id="rule-balancer_type_rr" checked="checked">RR轮询
+                    </div>
+                    <div class="checkbox">
+                      <input type="checkbox" value="true" id="rule-balancer_type_quick">快速优先
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group handle-holder">
+                <label class="col-sm-2 control-label">处理</label>
+                <div class="col-sm-4 handle-code-hodler">
+                    <input type="text" class="form-control" id="rule-code" placeholder="balancer fail status code" value="">
+                </div>
+                <div class="col-sm-2">
+                    <select class="form-control" id="rule-log">
+                        <option value="true">Log</option>
+                        <option value="false">Not Log</option>
+                    </select>
+                </div>
+            </div><!-- code -->
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-12">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="rule-enable" checked disabled="true"> 启用
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</script>
+
+<script src="/agw/static/js/balancer/balancer.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        APP.Common.resetNav("nav-balancer");
+        APP.Balancer.init();
+    });
+</script>
+
+{(footer.html)}
+</body>
+</html>

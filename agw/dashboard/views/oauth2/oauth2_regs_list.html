@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Gateway - Oauth2 Authorization - 授权用户列表</title>
+    {(meta.html)}
+</head>
+<body>
+
+{(header.html)}<!-- header end -->
+
+<div id="main" class="main-container container">
+    <div class="row" style="margin-bottom:20px">
+        <div class="col-md-12">
+            <div class="pull-left">
+                <h4>Oauth2 Authorization - 用户授权列表</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="table-view">
+        <div class="col-md-12">
+            <table  id="operable-table" class="table table-bordered  table-hover">
+                <thead>
+                <tr>
+                    <th width="50px">序号</th>
+                    <th width="110px">账户名称</th>
+                    <th width="110px">显示名称</th>
+                    <th width="100px">应用名称</th>
+                    <th width="80px">授权范围</th>
+                    <th width="150px">Client ID</th>
+                    <th>Client Secret</th>
+                    <th width="150px">创建时间</th>
+                    <th width="150px">操作</th>
+                </tr>
+                </thead>
+
+                <tbody id="rules" class="list">
+                {% for i, v in pairs(res_list) do %}
+                    <tr id="{{v.id}}" >
+                        <td class="center">{{v.id}}</td>
+                        <td class="left">{{v.username}}</td>
+                        <td class="left">{{v.showname}}</td>
+                        <td class="left">{{v.name}}</td>
+                        <td class="left">{{v.scope}}</td>
+                        <td class="left">{{v.client_id}}</td>
+                        <td class="left">{{v.client_secret}}</td>
+                        <td class="left">{{v.create_time}}</td>
+                        <td class="left">
+                            <button type="button" class="btn btn-default info-btn" data-id="{{v.id}}"><i title="详情" class="fa fa-info"></i></button>
+                            <button type="button" class="btn btn-default edit-info-btn" data-id="{{v.id}}"><i title="修改" class="fa fa-pencil"></i></button>
+                            <button type="button" class="btn btn-default del-info-btn" data-id="{{v.id}}"><i title="删除" class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                {% end %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    {(pager.html)}
+</div>
+
+<script id="edit-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="edit-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-username" class="col-sm-2 control-label">账户名称</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="username" value="${info.username}" placeholder="账户名称" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-showname" class="col-sm-2 control-label">账户名称</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="showname" value="${info.showname}" placeholder="展示名称">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-init_password" class="col-sm-2 control-label">初始密码</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="init_password" value="{@if info.init_password!=null}${info.init_password}{@/if}" placeholder="初始密码" {@if info.init_password==null}disabled="true"{@/if}>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-custom_id" class="col-sm-2 control-label">用户中心ID</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="custom_id" value="${info.custom_id}" placeholder="用户中心ID" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-client_id" class="col-sm-2 control-label">Client ID</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="client_id" value="${info.client_id}" placeholder="Client ID" readonly="readonly">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-client_secret" class="col-sm-2 control-label">Client Secret</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="client_secret" value="${info.client_secret}" placeholder="Client Secret">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-redirect_uri" class="col-sm-2 control-label">Redirect URI</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="redirect_uri" value="${info.redirect_uri}" placeholder="Redirect URI">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-access_token" class="col-sm-2 control-label">Access Token</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="access_token" value="${info.access_token}" placeholder="Access Token">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-token_type" class="col-sm-2 control-label">Token Type</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="token_type" value="${info.token_type}" placeholder="Token Type">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-refresh_token" class="col-sm-2 control-label">Refresh Token</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="refresh_token" value="${info.refresh_token}" placeholder="Refresh Token">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-expires_in" class="col-sm-2 control-label">失效时段</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="expires_in" value="${info.expires_in}" placeholder="失效时段">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-scope" class="col-sm-2 control-label">权限范围</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="scope" value="${info.scope}" placeholder="权限范围">
+                </div>
+            </div>
+            <input type="hidden" value="${info.id}" id="consumers_id">
+        </form>
+    </div>
+</script>
+<script type="text/javascript">
+    {% if res_json then %}
+    var infos = '{*res_json*}';
+    {% else %}
+    var infos = {};
+    {% end %}
+</script>
+<script src="/agw/static/js/oauth2/oauth2_regs_list.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        APP.Common.resetNav("nav-oauth2");
+        APP.Oauth2.init();
+    });
+</script>
+
+{(footer.html)}
+</body>
+</html>

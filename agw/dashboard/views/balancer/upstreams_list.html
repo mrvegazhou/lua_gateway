@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Gateway - 路由负载 - host下的url列表</title>
+    {(meta.html)}
+</head>
+<body>
+
+{(header.html)}<!-- header end -->
+
+<div id="main" class="main-container container">
+    <div class="row" style="margin-bottom:20px">
+        <div class="col-md-12">
+            <div class="pull-left">
+                <h4>路由负载 - host下的url列表</h4>
+            </div>
+            <div class="pull-right">
+                <a class="btn btn-primary" href="javascript:void(0);" id="add-info-btn">
+                    <input type="hidden" value="{{bid}}" id="hid_bid">
+                    <i class="fa fa-filter"></i>
+                    <span>添加URL</span>
+                </a>
+                <a class="btn btn-primary" href="javascript:void(0);" id="view-consul-info">
+                    <i class="fa fa-database"></i>
+                    <span>consul服务数据</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="table-view">
+        <div class="col-md-12">
+            <table  id="operable-table" class="table table-bordered  table-hover">
+                <thead>
+                <tr>
+                    <th width="50px">序号</th>
+                    <th>HOST</th>
+                    <th>端口</th>
+                    <th>Down</th>
+                    <th>Weight</th>
+                    <th>Max fails</th>
+                    <th>Fail timeout</th>
+                    <th>Backup</th>
+                    <th>执行状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+
+                <tbody id="rules" class="list">
+                {% for i, v in pairs(res_list) do %}
+                    <tr id="{{v.id}}" >
+                        <td class="center" id="td_id">{{v.id}}</td>
+                        <td class="left" id="td_host">{{v.host}}</td>
+                        <td class="left" id="td_port">{{v.port}}</td>
+                        <td class="left" id="td_down">
+                            {% if v.down==1 then %}
+                            是
+                            {% else %}
+                            否
+                            {% end %}
+                        </td>
+                        <td class="left" id="td_weight">{{v.weight}}</td>
+                        <td class="left" id="td_max_fails">{{v.max_fails}}</td>
+                        <td class="left" id="td_fail_timeout">{{v.fail_timeout}}</td>
+                        <td class="left" id="td_backup">
+                            {% if v.backup==1 then %}
+                            是
+                            {% else %}
+                            否
+                            {% end %}
+                        </td>
+                        <td class="left" id="td_status">
+                            {{v.status}}
+                        </td>
+                        <td class="left" id="td_created_time">
+                        {% local str_time = os.date("%Y-%m-%d %H:%M:%S", v.created_time) %}
+                        {{str_time}}
+                        </td>
+                        <td class="left">
+                            <button type="button" class="btn btn-default info-btn" data-id="{{v.id}}"><i title="详情" class="fa fa-info"></i></button>
+                            <button type="button" class="btn btn-default edit-info-btn" data-id="{{v.id}}"><i title="修改" class="fa fa-pencil"></i></button>
+                            <button type="button" class="btn btn-default del-info-btn" data-id="{{v.id}}"><i title="删除" class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                {% end %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    {(pager.html)}
+</div>
+
+<script id="edit-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="edit-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-host" class="col-sm-2 control-label">HOST</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="host" value="${info.host}" placeholder="host" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-port" class="col-sm-2 control-label">端口</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="port" value="${info.port}" placeholder="port" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-weight" class="col-sm-2 control-label">Weight</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="weight" value="${info.weight}" placeholder="weight" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-max_fails" class="col-sm-2 control-label">Max Fails</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="max_fails" value="${info.max_fails}" placeholder="max_fails" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-fail_timeout" class="col-sm-2 control-label">Fail Timeout</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="fail_timeout" value="${info.fail_timeout}" placeholder="fail_timeout" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-down" class="col-sm-2 control-label">Down</label>
+                <div class="col-sm-9">
+                    <select class="form-control" id="down" style="width:70px;">
+                        <option value="1" {@if info.down!=1}selected="selected"{@/if}>是</option>
+                        <option value="0" {@if info.down!=0}selected="selected"{@/if}>否</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-backup" class="col-sm-2 control-label">Backup</label>
+                <div class="col-sm-9">
+                    <select class="form-control" id="backup" style="width:70px;">
+                        <option value="1" {@if info.backup!=1}selected="selected"{@/if}>是</option>
+                        <option value="0" {@if info.backup!=0}selected="selected"{@/if}>否</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script src="/agw/static/js/balancer/balancer_list.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        APP.Common.resetNav("nav-balancer");
+        APP.Balancer.init();
+    });
+</script>
+
+{(footer.html)}
+</body>
+</html>

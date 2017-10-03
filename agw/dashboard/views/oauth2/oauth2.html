@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Gateway - Oauth2 Authorization</title>
+    {(meta.html)}
+</head>
+<body>
+
+{(header.html)}<!-- header end -->
+
+<div id="main" class="main-container container">
+    <div class="row" style="margin-bottom:20px">
+        <div class="col-md-12">
+            <div class="pull-left">
+                <h4>Oauth2 Authorization</h4>
+            </div>
+
+            <div class="pull-right">
+                <input id="rule-search" type="text" class="form-control" placeholder="  seach rules" style="width:150px;display: none;margin-right:10px;">
+                <a id="view-btn" style="display:none;" data-type="table" class="btn btn-warning" rel="nofollow" href="javascript:void(0);">
+                    <i class="fa fa-database"></i>
+                    <span>数据视图</span>
+                </a>
+                <a id="switch-btn" style="display:none;" data-on="yes" class="btn btn-danger" rel="nofollow" href="javascript:void(0);">
+                    <i class="fa fa-pause"></i>
+                    <span>停用oauth2</span>
+                </a>
+                <a class="btn btn-primary" href="javascript:void(0);" id="add-btn">
+                    <i class="fa fa-filter"></i>
+                    <span>添加新规则</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row" id="table-view">
+        <div class="col-md-12">
+            <table  id="operable-table" class="table table-bordered  table-hover">
+                <thead>
+                <tr>
+                    <th width="60px">序号</th>
+                    <th width="40px">启用</th>
+                    <th width="150px">规则名称</th>
+                    <th>匹配规则</th>
+                    <th>处理</th>
+                    <th>创建/变更时间</th>
+                    <th width="173px">操作</th>
+                </tr>
+                </thead>
+
+                <tbody id="rules" class="list">
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    {(data-view-part.html)}
+</div>
+
+<script id="rule-item-tpl" type="text/template">
+    {@each rules as r, index}
+    <tr {@if highlight_id == r.id } class="highlight" {@/if} id="${r.id}" >
+        <td class="center">${parseInt(index)+1}</td>
+        <td class="center">
+            {@if r.enable==true }
+            <input type="checkbox" disabled checked="checked"/>
+            {@/if}
+
+            {@if r.enable!=true }
+            <input type="checkbox" disabled/>
+            {@/if}
+        </td>
+        <td class="center"><p class="namep">${r.name}</p></td>
+        <td class="left">
+            配置码(自动生成): {@if r.handle.credentials.provision_key}${r.handle.credentials.provision_key}{@else}空{@/if}<br/>
+            访问令牌失效时间: {@if r.handle.credentials.token_expiration}${r.handle.credentials.token_expiration}{@else}0{@/if}<br/>
+            The Resource Owner Grant: {@if r.handle.credentials.enable_authorization_code}允许{@else}不允许{@/if}<br/>
+            Client Credentials Grant: {@if r.handle.credentials.enable_client_credentials}允许{@else}不允许{@/if}<br/>
+            Implicit Grant: {@if r.handle.credentials.enable_implicit_grant}允许{@else}不允许{@/if}<br/>
+            Password Grant: {@if r.handle.credentials.enable_password_grant}允许{@else}不允许{@/if}<br/>
+            是否接受HTTP: {@if r.handle.credentials.accept_http_if_already_terminated==true}是{@else}否{@/if}<br/>
+            是否隐藏证书:  {@if r.handle.credentials.hide_credentials==true}是{@else}否{@/if}
+        </td>
+        <td class="center">
+            {@if r.handle.log==true }
+                当code=${r.handle.code},记录log
+            {@else}
+                不记录log
+            {@/if}
+        </td>
+        <td class="center">${r.time}</td>
+        <td class="center do">
+            <div class="btn-group" role="group" aria-label="...">
+                <button type="button" class="btn btn-default auth-btn" data-id="${r.id}" data-name="${r.name}"><i title="授权" class="fa fa-user"></i></button>
+                <a href="/api/oauth2/check_regs/${r.id}/page/1" target="_blank" class="btn btn-default auth-show-btn" data-id="${r.id}" data-name="${r.name}"><i title="授权用户列表" class="fa fa-eye"></i></a>
+                <button type="button" class="btn btn-default edit-btn" data-id="${r.id}" data-name="${r.name}"><i title="编辑" class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-default delete-btn" data-id="${r.id}" data-name="${r.name}"><i title="删除" class="fa fa-trash"></i></button>
+            </div>
+        </td>
+    </tr>
+    {@/each}
+</script>
+
+<script id="add-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="add-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label">账户名称</label>
+                <div class="col-sm-10">
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="rule-name" placeholder="账户名称">
+                    </div>
+                </div>
+            </div><!-- name -->
+
+            <!-- add - credentials编辑器模板 start -->
+            <div class="form-group">
+                <label for="input-rules" class="col-sm-1 control-label">规则</label>
+                <div class="col-sm-10">
+                    <div class="checkbox">
+                      <label><input type="checkbox" value="true" id="rule-handle-enable_authorization_code" checked="checked">是否允许The Resource Owner Grant验证方式</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" value="true" id="rule-handle-enable_client_credentials">是否允许Client Credentials Grant验证方式</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" value="true" id="rule-handle-enable_implicit_grant">是否允许Implicit Grant验证方式</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" value="true" id="rule-handle-enable_password_grant">是否允许Password Grant验证方式</label>
+                    </div>
+                    <div style="position:relative; border:1px dotted #ccc"></div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" value="true" id="rule-handle-hide_credentials">是否接受HTTP</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" value="true" id="rule-handle-accept_http_if_already_terminated">是否隐藏证书</label>
+                    </div>
+                    <div style="position:relative; border:1px dotted #ccc;"></div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" value="7200" id="rule-handle-token_expiration" placeholder="访问令牌失效时间(秒)">
+                    </div>
+                </div>
+            </div>
+            <!-- add - credentials编辑器模板 end -->
+
+            <div class="form-group handle-holder">
+                <label class="col-sm-1 control-label">处理</label>
+
+                <div class="col-sm-4 handle-code-hodler">
+                    <input type="text" class="form-control" id="rule-handle-code" value="401" placeholder="authorization fail status code">
+                </div>
+
+                <div class="col-sm-2">
+                    <select class="form-control" id="rule-handle-log">
+                        <option value="true">Log</option>
+                        <option value="false">Not Log</option>
+                    </select>
+                </div>
+            </div><!-- handle -->
+
+            <div class="form-group">
+                <div class="col-sm-offset-1 col-sm-11">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="rule-enable"> 启用
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</script>
+
+<script id="edit-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="edit-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-name" class="col-sm-1 control-label">名称</label>
+                <div class="col-sm-11">
+                    <input type="text" class="form-control" id="rule-name" value="${r.name}" placeholder="名称">
+                </div>
+            </div><!-- name -->
+
+            <!-- edit - credentials编辑器模板 start -->
+            <div class="form-group">
+                <label for="input-rules" class="col-sm-1 control-label">规则</label>
+                <div class="col-sm-10">
+                    <div class="checkbox">
+                      <label><input type="checkbox" {@if r.handle.credentials.enable_authorization_code==true}checked="checked"{@/if} value="true" id="rule-handle-enable_authorization_code" checked="checked">是否允许The Resource Owner Grant验证方式</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" {@if r.handle.credentials.enable_client_credentials==true}checked="checked"{@/if} value="true" id="rule-handle-enable_client_credentials">是否允许Client Credentials Grant验证方式</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" {@if r.handle.credentials.enable_implicit_grant==true}checked="checked"{@/if} value="true" id="rule-handle-enable_implicit_grant">是否允许Implicit Grant验证方式</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" {@if r.handle.credentials.enable_password_grant==true}checked="checked"{@/if} value="true" id="rule-handle-enable_password_grant">是否允许Password Grant验证方式</label>
+                    </div>
+                    <div style="position:relative; border:1px dotted #ccc"></div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" {@if r.handle.credentials.hide_credentials==true}checked="checked"{@/if} value="true" id="rule-handle-hide_credentials">是否接受HTTP</label>
+                    </div>
+                    <div class="checkbox">
+                      <label><input type="checkbox" {@if r.handle.credentials.accept_http_if_already_terminated==true}checked="checked"{@/if} value="true" id="rule-handle-accept_http_if_already_terminated">是否隐藏证书</label>
+                    </div>
+                    <div style="position:relative; border:1px dotted #ccc;"></div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control"  id="rule-handle-token_expiration" placeholder="访问令牌失效时间(秒)" value="${r.handle.credentials.token_expiration}"/>
+                    </div>
+                </div>
+            </div>
+            <!-- edit - credentials编辑器模板 end -->
+
+            <div class="form-group handle-holder">
+                <label class="col-sm-1 control-label">处理</label>
+
+                <div class="col-sm-4 handle-code-hodler">
+                    <input type="text" class="form-control" id="rule-handle-code" placeholder="authorization fail status code" value="${r.handle.code}">
+                </div>
+
+                <div class="col-sm-2">
+                    <select class="form-control" id="rule-handle-log">
+                        <option value="true" {@if r.handle.log==true} selected {@/if}>Log</option>
+                        <option value="false" {@if r.handle.log==false} selected {@/if}>Not Log</option>
+                    </select>
+                </div>
+            </div><!-- handle -->
+
+            <div class="form-group">
+                <div class="col-sm-offset-1 col-sm-11">
+                    <div class="checkbox">
+                        <label>
+                            <input {@if r.enable==true} checked {@/if} type="checkbox" id="rule-enable"> 启用
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</script>
+
+<script id="auth-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="auth-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="oauth2-username" class="col-sm-2 control-label"><span style="color:red;">*</span>账户名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="oauth2-username" placeholder="账户名称(用户中心)">
+                </div>
+                
+                <label for="oauth2-showname" class="col-sm-2 control-label">展示名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="oauth2-showname" placeholder="展示名称">
+                </div>
+
+                <label for="oauth2-redirect_uri" class="col-sm-2 control-label">Redirect uri</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="oauth2-redirect_uri" placeholder="Redirect uri(可选)">
+                </div>
+
+                <label for="oauth2-name" class="col-sm-2 control-label">应用名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="oauth2-name" placeholder="应用名称(可选)">
+                </div>
+
+                <label for="oauth2-scope" class="col-sm-2 control-label">权限范围</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="oauth2-scope" placeholder="权限范围(默认为all)">
+                </div>
+            </div>
+            <span id='auth-info-mgs'></span>
+        </form>
+    </div>
+</script>
+
+<script src="/agw/static/js/oauth2/oauth2.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        APP.Common.resetNav("nav-oauth2");
+        APP.Oauth2.init();
+    });
+</script>
+
+{(footer.html)}
+</body>
+</html>

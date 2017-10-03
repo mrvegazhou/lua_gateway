@@ -1,0 +1,19 @@
+{% 
+    local page = tonumber(page)
+    local page_count = tonumber(page_count)
+%}
+<div class="row col-md-12" >
+    <nav  class="text-center">
+      <ul class="pagination">
+        {% if page>1 then %}
+        <li><a href="{{url..last_page}}">&laquo;</a></li>
+        {% end %}
+        {% for i=1, page_count do %}
+        <li {% if i==page then %} class="active"{% end %}><a href="{% if i==page then %}#{% else %}{{url..i}}{% end %}">{{i}}</a></li>
+        {% end %}
+        {% if page < page_count then %}
+        <li><a href="{{url..next_page}}">&raquo;</a></li>
+        {% end %}
+      </ul>
+    </nav>
+</div>

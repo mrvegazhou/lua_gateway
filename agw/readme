@@ -1,0 +1,18 @@
+luarocks install penlight
+luarocks install luasocket
+luarocks install md5
+luarocks install multipart
+luarocks install luatz
+luarocks install lua-cmsgpack
+
+/usr/local/luarocks/share/lua/5.1/?.lua
+
+yum -y install libuuid-devel
+wget https://github.com/dcshi/lua-resty-UUID/archive/master.zip -O lua-resty-UUID-master.zip
+unzip lua-resty-UUID-master.zip
+cd lua-resty-UUID-master/clib
+make
+mv libuuidx.so /usr/lib64/libuuidx.so
+
+
+/usr/local/openresty/nginx/sbin/nginx -c /var/workspace/agw/conf/nginx.conf

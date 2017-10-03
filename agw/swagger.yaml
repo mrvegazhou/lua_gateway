@@ -1,0 +1,72 @@
+# this is an example of the VCG API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: VCG API
+  description: VCG api
+  version: "2.0.0"
+# the domain of the service
+host: 101.201.239.159
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /
+
+paths:
+  /api/oauth2/refresh_token:
+    post:
+      summary: Refresh token
+      description: |
+        根据鉴权用户ID和密钥访问refresh_token进行过期token的刷新操作,重新生成token,并恢复token的失效时间.
+      parameters:
+        - name: client_id
+          in: body
+          description: 鉴权用户ID.
+          required: true
+          type: string
+        - name: client_secret
+          in: body
+          description: 鉴权用户的密钥.
+          required: true
+          type: string
+        - name: grant_type
+          in: body
+          required: true
+          description: 鉴权请求类型
+          type: string
+      tags:
+        - Token
+      responses:
+        200:
+          description: |
+            返回refresh_token
+                token_type
+                access_token
+                expires_in
+          headers: 
+            cache-control: 
+              type: string
+              description: 去除缓存
+            pragma: 
+              type: string
+              description: 去除缓存
+            www-authenticate:
+              type: string
+              description: 授权方案
+          schema:
+            type: json
+            properties:
+              refresh_token:
+                type: string
+              token_type: 
+                type: string
+              access_token:
+                type: string
+              expires_in:
+                type: integer
+          examples: 
+            {"refresh_token":"7fdb7acbcd524274b6666fc6dc92011d","token_type":"bearer","access_token":"e6b1fcd6fb6dcfd9ab94a2811a49b803c1a5ce6435a547ac19bbba8b8b2f6329","expires_in":7200}
+        400:
+          description: Unexpected error
+  

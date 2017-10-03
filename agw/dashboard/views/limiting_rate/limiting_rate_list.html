@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Gateway - 限速 - 列表</title>
+    {(meta.html)}
+</head>
+<body>
+
+{(header.html)}<!-- header end -->
+
+<div id="main" class="main-container container">
+    <div class="row" style="margin-bottom:20px">
+        <div class="col-md-12">
+            <div class="pull-left">
+                <h4>限速 - 列表</h4>
+            </div>
+            <div class="pull-right">
+                <a class="btn btn-primary" href="javascript:void(0);" id="add-info-btn">
+                    <input type="hidden" value="{{rid}}" id="hid_rid">
+                    <i class="fa fa-filter"></i>
+                    <span>添加</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="table-view">
+        <div class="col-md-12">
+            <table  id="operable-table" class="table table-bordered  table-hover">
+                <thead>
+                <tr>
+                    <th width="50px">序号</th>
+                    <th>限速类型</th>
+                    <th>时间类型</th>
+                    <th>次数</th>
+                    <th>限速条件</th>
+                    <th>限速值</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody id="rules" class="list">
+                {% for i, v in pairs(res_list) do %}
+                    <tr id="{{v.id}}" >
+                        <td class="center" id="td-id">{{v.id}}</td>
+                        <td class="center" id="td-type">
+                            {% if v.type==1 then %}
+                                API账户ID
+                            {% elseif v.type==2 then %}
+                                授权账户ID
+                            {% elseif v.type==3 then %}
+                                IP
+                            {% elseif v.type==4 then %}
+                                URI
+                            {% elseif v.type==5 then %}
+                                Query
+                            {% elseif v.type==6 then %}
+                                Header
+                            {% elseif v.type==7 then %}
+                                UserAgent
+                            {% elseif v.type==8 then %}
+                                Method
+                            {% end %}
+                        </td>
+                        <td class="center" id="td-period">
+                            {% if v.period==1 then %}
+                                1秒
+                            {% elseif v.period==60 then %}
+                                1分钟
+                            {% elseif v.period==3600 then %}
+                                1小时
+                            {% elseif v.period==86400 then %}
+                                1天
+                            {% end %}
+                        </td>
+                        <td class="center" id="td-period_count">
+                            {{v.period_count}}
+                        </td>
+                        <td class="center" id="td-condition">{{v.condition}}</td>
+                        <td class="center" id="td-condition_value">{{v.condition_value}}</td>
+                        <td class="center" id="td-create_time">
+                        {{v.create_time}}
+                        </td>
+                        <td class="center">
+                            <button type="button" class="btn btn-default edit-info-btn" data-id="{{v.id}}"><i title="修改" class="fa fa-pencil"></i></button>
+                            <button type="button" class="btn btn-default del-info-btn" data-id="{{v.id}}"><i title="删除" class="fa fa-trash"></i></button>
+                        </td>
+                    </tr>
+                {% end %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {(pager.html)}
+</div>
+
+<script id="edit-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="edit-rule-form" class="form-horizontal">
+             <div class="form-group">
+                <label for="edit_limit_type" class="col-sm-3 control-label">限速类型</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="edit_limit_type">
+                        <option value="1" {@if info.type=='1'} selected {@/if}>API账户ID</option>
+                        <option value="2" {@if info.type=='2'} selected {@/if}>授权账户ID</option>
+                        <option value="3" {@if info.type=='3'} selected {@/if}>IP</option>
+                        <option value="4" {@if info.type=='4'} selected {@/if}>URI</option>
+                        <option value="5" {@if info.type=='5'} selected {@/if}>Query</option>
+                        <option value="6" {@if info.type=='6'} selected {@/if}>Header</option>
+                        <option value="7" {@if info.type=='7'} selected {@/if}>UserAgent</option>
+                        <option value="8" {@if info.type=='8'} selected {@/if}>Method</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_condition" class="col-sm-3 control-label">限制条件</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="edit_condition">
+                        <option value="match" {@if info.type=='match'} selected {@/if}>Match</option>
+                        <option value="not_match" {@if info.condition=='not_match'} selected {@/if}>Not Match</option>
+                        <option value="=" {@if info.condition=='='} selected {@/if}>=</option>
+                        <option value="!=" {@if info.condition=='!='} selected {@/if}>!=</option>
+                        <option value=">" {@if info.condition=='>'} selected {@/if}>></option>
+                        <option value=">=" {@if info.condition=='>='} selected {@/if}>>=</option>
+                        <option value="<=" {@if info.condition=='<='} selected {@/if}>≤</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_condition_value" class="col-sm-3 control-label">限制条件值</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="edit_condition_value" value="${info.condition_value}" placeholder="限制条件值" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_period" class="col-sm-3 control-label">时间类型</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="edit_period">
+                        <option value="1" {@if info.period=='1'} selected {@/if}>1秒</option>
+                        <option value="60" {@if info.period=='60'} selected {@/if}>1分钟</option>
+                        <option value="3600" {@if info.period=='3600'} selected {@/if}>1小时</option>
+                        <option value="86400" {@if info.period=='86400'} selected {@/if}>1天</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="edit_period_count" class="col-sm-3 control-label">次数(每周期)</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="edit_period_count" value="${info.period_count}" placeholder="次数(每周期)" >
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script id="add-tpl" type="application/template">
+    <div id="rule-add-area">
+        <form id="add-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="limit_type" class="col-sm-3 control-label">限速类型</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="limit_type">
+                        <option value="1">API账户ID</option>
+                        <option value="2">授权账户ID</option>
+                        <option value="3">IP</option>
+                        <option value="4">URI</option>
+                        <option value="5">Query</option>
+                        <option value="6">Header</option>
+                        <option value="7">UserAgent</option>
+                        <option value="8">Method</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="condition" class="col-sm-3 control-label">限制条件</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="condition">
+                        <option value="match">Match</option>
+                        <option value="not_match">Not Match</option>
+                        <option value="=">=</option>
+                        <option value="!=">!=</option>
+                        <option value=">">></option>
+                        <option value=">=">>=</option>
+                        <option value="<="><=</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="condition_value" class="col-sm-3 control-label">限制条件值</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="condition_value" value="" placeholder="限制条件值" >
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="period" class="col-sm-3 control-label">时间类型</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="period">
+                        <option value="1">1秒</option>
+                        <option value="60">1分钟</option>
+                        <option value="3600">1小时</option>
+                        <option value="86400">1天</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="period_count" class="col-sm-3 control-label">次数(每周期)</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="period_count" value="" placeholder="次数(每周期)" >
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script src="/agw/static/js/limiting_rate/limiting_rate_list.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        APP.Common.resetNav("nav-limiting_rate");
+        APP.Limiting_rate.init();
+    });
+</script>
+
+{(footer.html)}
+</body>
+</html>

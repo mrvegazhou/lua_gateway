@@ -1,0 +1,40 @@
+<div class="header">
+    <nav class="navbar navbar-inverse navbar-static-top navbar-default" style="background-color: #333333;">
+        <div class="container">
+            <div class="navbar-header" id="navbar-header">
+                <a href="/" class="navbar-brand"><b style="color:red;">API</b> Gateway</a>
+            </div>
+
+            <span>
+              <ul class="nav navbar-nav" id="main-nav-menu">
+                   <li id="nav-oauth2"><a href="/oauth2">鉴权</a></li>
+                   <li id="nav-balancer"><a href="/upstreams">动态路由</a></li>
+                   <li id="nav-limiting_rate"><a href="/limiting_rate">限速</a></li>
+              </ul>
+            </span>
+
+            <ul class="nav user-bar navbar-nav navbar-right">
+                {%
+                    if locals and locals.login and locals.login == true then
+                %}
+                <li id="user-op" class="nav_dropdown dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ locals.username }} 
+                    <span class="caret"></span>
+                    </a>
+ 
+                    <button class="navbar-toggle" type="button" data-toggle="dropdown" role="button" aria-expanded="false"> 
+                        <span class="sr-only">Toggle</span>
+                        <i class="fa fa-reorder"></i>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li class=""><a href="/admin/user/manage">用户管理</a></li>
+                        <li class=""><a rel="nofollow" href="/auth/logout">退出</a></li>
+                    </ul>
+                </li>
+                {% end %}
+            </ul>
+
+
+        </div>
+    </nav>
+</div><!-- header end -->

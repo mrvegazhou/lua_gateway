@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Gateway - Limiting Rate</title>
+    {(meta.html)}
+</head>
+<body>
+
+{(header.html)}<!-- header end -->
+
+<div id="main" class="main-container container">
+    <div class="row" style="margin-bottom:20px">
+        <div class="col-md-12">
+            <div class="pull-left">
+                <h4>限速信息列表</h4>
+            </div>
+
+            <div class="pull-right">
+                <input id="rule-search" type="text" class="form-control" placeholder="seach rules" style="width:150px;display: none;margin-right:10px;">
+                <a id="view-btn" style="display:none;" data-type="table" class="btn btn-warning" rel="nofollow" href="javascript:void(0);">
+                    <i class="fa fa-database"></i>
+                    <span>数据视图</span>
+                </a>
+                <a id="switch-btn" style="display:none;" data-on="yes" class="btn btn-danger" rel="nofollow" href="javascript:void(0);">
+                    <i class="fa fa-pause"></i>
+                    <span>停用限速</span>
+                </a>
+                <a class="btn btn-primary" href="javascript:void(0);" id="add-btn">
+                    <i class="fa fa-filter"></i>
+                    <span>添加限速规则</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row" id="table-view">
+        <div class="col-md-12">
+            <table  id="operable-table" class="table table-bordered  table-hover">
+                <thead>
+                <tr>
+                    <th width="60px">序号</th>
+                    <th width="40px">启用</th>
+                    <th width="150px">规则名称</th>
+                    <th>限速规则</th>
+                    <th>处理</th>
+                    <th>创建/变更时间</th>
+                    <th width="173px">操作</th>
+                </tr>
+                </thead>
+                <tbody id="rules" class="list">
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    {(data-view-part.html)}
+    {(pager_ajax.html)}
+</div>
+
+<script id="rule-item-tpl" type="text/template">
+    {@each rules as rate_info, index}
+    <tr id="${rate_info.id}" >
+        <td class="center">${rate_info.id}</td>
+        <td class="center">
+            {@if rate_info.enable==true }
+            <input type="checkbox" disabled checked="checked"/>
+            {@/if}
+            {@if rate_info.enable!=true }
+            <input type="checkbox" disabled/>
+            {@/if}
+        </td>
+        <td class="center">${rate_info.key}</td>
+        <td class="center">
+            {@if rate_info.global_limit==true }全局{@else}非全局{@/if}限制
+        </td>
+        <td class="center">
+            {@if rate_info.log==true }
+                当code=${rate_info.code},记录log
+            {@else}
+                不记录log
+            {@/if}
+        </td>
+        <td class="center">${rate_info.op_time}</td>
+        <td class="center do">
+            <div class="btn-group" role="group" aria-label="...">
+                <a href="/api/limiting_rate/list?rid=${rate_info.id}" target="_blank" class="btn btn-default auth-show-btn" data-id="${rate_info.id}" data-name="${rate_info.key}"><i title="限速详情列表" class="fa fa-eye"></i></a>
+                <button type="button" class="btn btn-default edit-btn" data-id="${rate_info.id}" data-name="${rate_info.key}"><i title="编辑" class="fa fa-pencil"></i></button>
+                <button type="button" class="btn btn-default delete-btn" data-id="${rate_info.id}" data-name="${rate_info.key}"><i title="删除" class="fa fa-trash"></i></button>
+            </div>
+        </td>
+    </tr>
+    {@/each}
+</script>
+
+<script id="edit-tpl" type="application/template">
+    <div id="rule-edit-area">
+        <form id="edit-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="rule-key" value="{@if r.key}${r.key}{@/if}" placeholder="名称">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label">限速范围</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="rule-global_limit">
+                        <option value="true" {@if r.global_limit=='true'} selected {@/if}>全局限制</option>
+                        <option value="false" {@if r.global_limit=='false'} selected {@/if}>非全局限制</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group handle-holder">
+                <label class="col-sm-2 control-label">处理</label>
+                <div class="col-sm-4 handle-code-hodler">
+                    <input type="text" class="form-control" id="rule-code" placeholder="limiting rate fail status code" value="${r.code}">
+                </div>
+                <div class="col-sm-2">
+                    <select class="form-control" id="rule-log">
+                        <option value="true" {@if r.log==true} selected {@/if}>Log</option>
+                        <option value="false" {@if r.log==false} selected {@/if}>Not Log</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-12">
+                    <div class="checkbox">
+                        <label>
+                            <input {@if r.enable==true} checked {@/if} type="checkbox" id="rule-enable"> 启用
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script id="add-tpl" type="application/template">
+    <div id="rule-add-area">
+        <form id="add-rule-form" class="form-horizontal">
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="rule-key" value="" placeholder="名称">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-name" class="col-sm-2 control-label">限速范围</label>
+                <div class="col-sm-3">
+                    <select class="form-control" id="rule-global_limit">
+                        <option value="false">非全局限制</option>
+                        <option value="true" >全局限制</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group handle-holder">
+                <label class="col-sm-2 control-label">处理</label>
+                <div class="col-sm-4 handle-code-hodler">
+                    <input type="text" class="form-control" id="rule-code" placeholder="limiting rate fail status code" value="">
+                </div>
+                <div class="col-sm-2">
+                    <select class="form-control" id="rule-log">
+                        <option value="false">Not Log</option>
+                        <option value="true">Log</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-12">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" id="rule-enable"> 启用
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</script>
+
+<script src="/agw/static/js/limiting_rate/limiting_rate.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        APP.Common.resetNav("nav-limiting_rate");
+        APP.Limiting_rate.init();
+    });
+</script>
+
+{(footer.html)}
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Api Gateway - 404</title>
+    {(meta.html)}
+</head>
+<body>
+{(header.html)}
+<div id="main" class="main-container container">
+    <section class="body">
+        <div id="postingbody">
+            <br><br>
+            <p>There is nothing here</p>
+            <p>No web page for this address</p>
+            <p>404 Error</p>
+            <pre>
+                <big>
+                 _____________
+                (  返回<a href="{% if return_url then %}{{return_url}}{% end %}">{% if return_name then %}{{return_name}}{% end %}</a>? )
+                (  <a href="javascript:window.opener=null;window.open('','_self');window.close();">关闭</a> )
+                (  <a href="/">首页?</a>  )
+                 ------------- 
+                       O 
+                        O   ^__^
+                         o  (oo)\_______
+                            (__)\       )\/\
+                                ||----w |
+                                ||     ||
+                </big>
+            </pre>
+        </div>
+    </section>
+</div>
+{(footer.html)}
