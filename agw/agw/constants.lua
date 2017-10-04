@@ -1,9 +1,8 @@
 return {
-  -- non-standard headers, specific to Kong
   HEADERS = {
     HOST_OVERRIDE = "X-Host-Override",
-    PROXY_LATENCY = "X-Kong-Proxy-Latency",
-    UPSTREAM_LATENCY = "X-Kong-Upstream-Latency",
+    PROXY_LATENCY = "X-Proxy-Latency",
+    UPSTREAM_LATENCY = "X-Upstream-Latency",
     CONSUMER_ID = "X-Consumer-ID",
     CONSUMER_USERNAME = "X-Consumer-Username",
     CREDENTIAL_USERNAME = "X-Credential-Username",
@@ -46,13 +45,13 @@ return {
   },
 
   AES = {
-    IV = '78afc8512559b62f',
-    KEY = '78afc8512559b62f'
+    IV = '',
+    KEY = ''
   },
 
   VCG_HTTP_URLS = {
-    VCG_USER_GET = 'http://passportservice.vcg.com/user/getByUserName?ucToken=ff05f8ef2433785ec6467be1ba44e2301&unToken=44e65b6ad457294013ca90fc4557e1191',
-    VCG_USER_REGISTER = 'http://passportservice.vcg.com/user/register?ucToken=ff05f8ef2433785ec6467be1ba44e2301&unToken=44e65b6ad457294013ca90fc4557e1191'
+    VCG_USER_GET = '',
+    VCG_USER_REGISTER = ''
   }
 
 }
